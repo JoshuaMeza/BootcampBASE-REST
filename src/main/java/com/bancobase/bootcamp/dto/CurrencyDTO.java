@@ -1,10 +1,9 @@
 package com.bancobase.bootcamp.dto;
 
-import com.bancobase.bootcamp.dto.response.ExchangeRateResponse;
-import com.bancobase.bootcamp.dto.response.SymbolsNameResponse;
-
-import com.bancobase.bootcamp.schemas.CurrencySchema;
+import com.bancobase.bootcamp.dto.response.*;
 import lombok.*;
+
+import java.util.*;
 
 @Getter
 @Setter
@@ -15,12 +14,22 @@ public class CurrencyDTO {
     private String symbol;
     private Double value;
 
-    public static CurrencyDTO getFromSchema(CurrencySchema currencySchema) {
-        return CurrencyDTO
-                .builder()
-                .name(currencySchema.getName())
-                .symbol(currencySchema.getSymbol())
-                .value(currencySchema.getValue())
-                .build();
+    public static List<CurrencyDTO> mergeExchangeRateAndSymbolsNameResponses(
+            ExchangeRateResponse exchangeRateResponse,
+            SymbolsNameResponse symbolsNameResponse
+    ) {
+        Map<String, Double> rates = exchangeRateResponse.getRates();
+        Map<String, Symbol> symbols = symbolsNameResponse.getSymbols();
+
+        return exchangeRateResponse
+                .getRates()
+                .keySet()
+                .stream()
+                .map(rate -> CurrencyDTO.builder()
+                        .name(symbols.get(rate).getDescription())
+                        .symbol(rate)
+                        .value(rates.get(rate))
+                        .build())
+                .toList();
     }
 }
